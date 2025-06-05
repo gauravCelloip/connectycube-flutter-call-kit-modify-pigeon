@@ -53,7 +53,6 @@ class EventReceiver : BroadcastReceiver() {
                 Log.d("CallEND :: ","Call Rejected from ${isApplicationForeground(context)}")
                // if (isApplicationForeground(context)) {
 
-                if (!isApplicationForeground(context)) {
                     broadcastIntent.putExtra("userCallbackHandleName", REJECTED_IN_BACKGROUND)
                     ConnectycubeFlutterBgPerformingService.enqueueMessageProcessing(
                         context,
