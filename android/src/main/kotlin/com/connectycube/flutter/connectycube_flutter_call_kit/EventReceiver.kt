@@ -50,6 +50,8 @@ class EventReceiver : BroadcastReceiver() {
                 NotificationManagerCompat.from(context).cancel(callId.hashCode())
 
                 processCallEnded(context, callId!!)
+                Log.d("CallEND :: ","Call Rejected from ${isApplicationForeground(context)}")
+               // if (isApplicationForeground(context)) {
 
                 if (!isApplicationForeground(context)) {
                     broadcastIntent.putExtra("userCallbackHandleName", REJECTED_IN_BACKGROUND)
@@ -57,7 +59,7 @@ class EventReceiver : BroadcastReceiver() {
                         context,
                         broadcastIntent
                     )
-                }
+               // }
             }
 
             ACTION_CALL_ACCEPT -> {

@@ -140,7 +140,7 @@ class ConnectycubeFlutterCallKitPlugin : FlutterPlugin, MethodCallHandler,
                     @Suppress("UNCHECKED_CAST") val arguments: Map<String, Any> =
                         call.arguments as Map<String, Any>
                     val callId = arguments["session_id"] as String
-
+                    Log.d("ConnectycubeFlutterCallKitPlugin", "[showCallNotification] callId: $callId current state :: ${CALL_STATE_UNKNOWN}  call state :: ${getCallState(applicationContext, callId)}")
                     if (CALL_STATE_UNKNOWN != getCallState(applicationContext, callId)) {
                         result.success(null)
                         return
@@ -172,7 +172,8 @@ class ConnectycubeFlutterCallKitPlugin : FlutterPlugin, MethodCallHandler,
 
                     result.success(null)
                 } catch (e: Exception) {
-                    result.error("ERROR", e.message, "")
+                    Log.d("ConnectycubeFlutterCallKitPlugin", "[showCallNotification] error failed to show call notification: ${e.message}")
+                    result.error("ERROR",  e.message, " ")
                 }
             }
 

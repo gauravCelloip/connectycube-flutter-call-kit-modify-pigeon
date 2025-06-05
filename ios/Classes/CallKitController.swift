@@ -10,6 +10,7 @@ import AVFoundation
 import CallKit
 
 enum CallEvent : String {
+    case setunHeld = "setUnHeld"
     case incomingCall = "incomingCall"
     case answerCall = "answerCall"
     case endCall = "endCall"
@@ -31,6 +32,7 @@ enum CallState : String {
     case accepted = "accepted"
     case rejected = "rejected"
     case unknown = "unknown"
+    case earlycall = "earlycall"
 }
 
 class CallKitController : NSObject {
@@ -40,7 +42,7 @@ class CallKitController : NSObject {
     var currentCallData: [String: Any] = [:]
     private var callStates: [String:CallState] = [:]
     private var callsData: [String:[String:Any]] = [:]
-    
+    private var isGetCall = false
     override init() {
         self.provider = CXProvider(configuration: CallKitController.providerConfiguration)
         self.callController = CXCallController()
@@ -61,7 +63,7 @@ class CallKitController : NSObject {
         
         providerConfiguration.supportsVideo = true
         providerConfiguration.maximumCallsPerCallGroup = 1
-        providerConfiguration.maximumCallGroups = 1;
+        providerConfiguration.maximumCallGroups = 2;
         providerConfiguration.supportedHandleTypes = [.generic]
         
         if #available(iOS 11.0, *) {
@@ -81,10 +83,10 @@ class CallKitController : NSObject {
         }
         
         if(icon != nil){
-            let iconImage = UIImage(named: icon!)
-            let iconData = iconImage?.pngData()
+            let iconImage = UIImage(named: "callkit_logo")?.pngData()//UIImage(named: icon!)
+//            let iconData = iconImage?.pngData()
             
-            providerConfiguration.iconTemplateImageData = iconData
+            providerConfiguration.iconTemplateImageData = iconImage
         }
     }
     
@@ -103,9 +105,9 @@ class CallKitController : NSObject {
         update.localizedCallerName = callInitiatorName
         update.remoteHandle = CXHandle(type: .generic, value: uuid)
         update.hasVideo = callType == 1
-        update.supportsGrouping = false
-        update.supportsUngrouping = false
-        update.supportsHolding = false
+        update.supportsGrouping = true
+        update.supportsUngrouping = true
+        update.supportsHolding = true
         update.supportsDTMF = false
         
         if (self.currentCallData["session_id"] == nil || self.currentCallData["session_id"] as! String != uuid) {
@@ -124,7 +126,7 @@ class CallKitController : NSObject {
                     self.currentCallData["call_opponents"] = opponents.map { String($0) }.joined(separator: ",")
                     self.currentCallData["user_info"] = userInfo
                     
-                    self.callStates[uuid] = .pending
+                    self.callStates[uuid] = .earlycall
                     self.callsData[uuid] = self.currentCallData
 
                     self.actionListener?(.incomingCall, UUID(uuidString: uuid)!, self.currentCallData)
@@ -137,8 +139,13 @@ class CallKitController : NSObject {
             
             completion?(nil)
         }
+        Timer.scheduledTimer(withTimeInterval: 10.0, repeats: false) { [self] Timer in
+            print("callStates callStates ===================> count : \(callStates.count) ::: \(self.callStates[uuid.lowercased()] ?? .unknown)")
+            if self.callStates[uuid.lowercased()] ?? .unknown == .earlycall ||  self.callStates[uuid.lowercased()] ?? .unknown == .unknown{
+                    provider.reportCall(with: UUID(uuidString: uuid)!, endedAt: Date(), reason: .answeredElsewhere)
+            }
+        }
     }
-    
     func reportOutgoingCall(uuid : UUID, finishedConnecting: Bool){
         print("[CallKitController][reportOutgoingCall] uuid: \(uuid.uuidString.lowercased()) connected: \(finishedConnecting)")
         
@@ -163,7 +170,7 @@ class CallKitController : NSObject {
         }
         
         self.callStates[uuid.uuidString.lowercased()] = .rejected
-        self.provider.reportCall(with: uuid, endedAt: Date.init(), reason: cxReason)
+        self.provider.reportCall(with: uuid, endedAt: Date.init() + 10 , reason: cxReason)
     }
     
     func getCallState(uuid: String) -> CallState {
@@ -207,7 +214,7 @@ class CallKitController : NSObject {
                     .allowBluetooth,
                     .allowBluetoothA2DP,
                 ])
-            try audioSession.setMode(AVAudioSession.Mode.videoChat)
+            try audioSession.setMode(AVAudioSession.Mode.voiceChat)
             try audioSession.setPreferredSampleRate(44100.0)
             try audioSession.setPreferredIOBufferDuration(0.005)
             try audioSession.setActive(active)
@@ -272,7 +279,7 @@ extension CallKitController {
         
         let transaction = CXTransaction(action: startCallAction)
         
-        self.callStates[uuid!.lowercased()] = .accepted
+        self.callStates[uuid!.lowercased()] = .earlycall
         
         requestTransaction(transaction);
     }
@@ -284,7 +291,7 @@ extension CallKitController {
         let answerCallAction = CXAnswerCallAction(call: callUUID!)
         let transaction = CXTransaction(action: answerCallAction)
         
-        self.callStates[uuid.lowercased()] = .accepted
+        self.callStates[uuid.lowercased()] = .earlycall
         
         requestTransaction(transaction);
     }
@@ -300,8 +307,8 @@ extension CallKitController: CXProviderDelegate {
         print("[CallKitController][CXAnswerCallAction] callUUID: \(action.callUUID.uuidString.lowercased())")
         
         configureAudioSession(active: true)
-        callStates[action.callUUID.uuidString.lowercased()] = .accepted
-        actionListener?(.answerCall, action.callUUID, self.currentCallData)
+        callStates[action.callUUID.uuidString.lowercased()] = .earlycall
+        actionListener?(.answerCall, action.callUUID, callsData[action.callUUID.uuidString.lowercased()])
         
         action.fulfill()
     }
@@ -320,7 +327,7 @@ extension CallKitController: CXProviderDelegate {
     func provider(_ provider: CXProvider, perform action: CXEndCallAction) {
         print("[CallKitController][CXEndCallAction]")
         
-        actionListener?(.endCall, action.callUUID, currentCallData)
+        actionListener?(.endCall, action.callUUID, callsData[action.callUUID.uuidString.lowercased()])
         callStates[action.callUUID.uuidString.lowercased()] = .rejected
         
         action.fulfill()
@@ -329,7 +336,11 @@ extension CallKitController: CXProviderDelegate {
     func provider(_ provider: CXProvider, perform action: CXSetHeldCallAction) {
         print("[CallKitController][CXSetHeldCallAction] callUUID: \(action.callUUID.uuidString.lowercased())")
         
-        actionListener?(.setHeld, action.callUUID, ["isOnHold": action.isOnHold])
+            if action.isOnHold {
+            actionListener?(.setHeld, action.callUUID,callsData[action.callUUID.uuidString.lowercased()])
+            }else{
+                    actionListener?(.setunHeld, action.callUUID,callsData[action.callUUID.uuidString.lowercased()])
+            }
         
         action.fulfill()
     }
@@ -350,7 +361,7 @@ extension CallKitController: CXProviderDelegate {
         print("[CallKitController][CXStartCallAction]: callUUID: \(action.callUUID.uuidString.lowercased())")
         
         actionListener?(.startCall, action.callUUID, currentCallData)
-        callStates[action.callUUID.uuidString.lowercased()] = .accepted
+        callStates[action.callUUID.uuidString.lowercased()] = .earlycall
         configureAudioSession(active: true)
         
         action.fulfill()
