@@ -139,7 +139,7 @@ class CallKitController : NSObject {
             
             completion?(nil)
         }
-        Timer.scheduledTimer(withTimeInterval: 10.0, repeats: false) { [self] Timer in
+        Timer.scheduledTimer(withTimeInterval: 45.0, repeats: false) { [self] Timer in
             print("callStates callStates ===================> count : \(callStates.count) ::: \(self.callStates[uuid.lowercased()] ?? .unknown)")
             if self.callStates[uuid.lowercased()] ?? .unknown == .earlycall ||  self.callStates[uuid.lowercased()] ?? .unknown == .unknown{
                     provider.reportCall(with: UUID(uuidString: uuid)!, endedAt: Date(), reason: .answeredElsewhere)
