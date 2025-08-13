@@ -104,10 +104,10 @@ class CallKitController : NSObject {
         let update = CXCallUpdate()
         update.localizedCallerName = callInitiatorName
         update.remoteHandle = CXHandle(type: .generic, value: uuid)
-        update.hasVideo = callType == 1
-        update.supportsGrouping = true
-        update.supportsUngrouping = true
-        update.supportsHolding = true
+        update.hasVideo = callType == 1 || callType == 4 || callType == 6
+        update.supportsGrouping = false
+        update.supportsUngrouping = false
+        update.supportsHolding = false
         update.supportsDTMF = false
         
         if (self.currentCallData["session_id"] == nil || self.currentCallData["session_id"] as! String != uuid) {
