@@ -50,13 +50,13 @@ fun showCallNotification(
 
     val intent = getLaunchIntent(context)
 
-    val pendingIntent = PendingIntent.getActivity(
-        context,
-        callId.hashCode(),
-        intent,
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE else PendingIntent.FLAG_UPDATE_CURRENT
-
-    )
+//    val pendingIntent = PendingIntent.getActivity(
+//        context,
+//        callId.hashCode(),
+//        intent,
+//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE else PendingIntent.FLAG_UPDATE_CURRENT
+//
+//    )
 
     var ringtone: Uri
 
@@ -90,7 +90,7 @@ fun showCallNotification(
             context,
             callInitiatorName,
             callTypeTitle,
-            pendingIntent,
+            //  pendingIntent,
             ringtone,
             isVideoCall,
             callData
@@ -116,6 +116,9 @@ fun showCallNotification(
         callId.hashCode(),
         callData
     )
+
+
+
 
     // Set small icon for notification
     setNotificationSmallIcon(context, builder, isVideoCall)
@@ -198,7 +201,7 @@ fun createCallNotification(
     context: Context,
     title: String,
     callName: String?,
-    pendingIntent: PendingIntent,
+    //  pendingIntent: PendingIntent,
     ringtone: Uri,
     isVideoCall: Boolean,
     callData: Bundle
@@ -213,6 +216,13 @@ fun createCallNotification(
         getRejectCallIntent(context, callData, title.hashCode()),
         getAcceptCallIntent(context, callData, title.hashCode())
     )
+
+    val disabledClickIntent = PendingIntent.getActivity(
+        context,
+        0,
+        Intent(), // An empty intent that does nothing
+        PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+    )
     style.setIsVideo(isVideoCall)
 
     val notificationBuilder = NotificationCompat.Builder(context, CALL_CHANNEL_ID)
@@ -221,13 +231,15 @@ fun createCallNotification(
         .setStyle(style)
         .addPerson(person)
         .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
-        .setAutoCancel(true)
+        .setAutoCancel(false)
         .setOngoing(true)
         .setCategory(NotificationCompat.CATEGORY_CALL)
-        .setContentIntent(pendingIntent)
+      // .setContentIntent(disabledClickIntent)
+
+        // .setContentIntent(pendingIntent)
         .setSound(ringtone)
         .setPriority(NotificationCompat.PRIORITY_MAX)
-        .setTimeoutAfter(60000)
+        .setTimeoutAfter(42000)
     return notificationBuilder
 }
 

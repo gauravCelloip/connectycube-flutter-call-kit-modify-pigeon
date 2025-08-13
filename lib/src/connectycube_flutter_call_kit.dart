@@ -53,6 +53,8 @@ class ConnectycubeFlutterCallKit {
   static CallEventHandler? _onCallRejected;
 
   static CallEventHandler? _onCallIncoming;
+  static CallEventHandler? _onSetCallOnHold;
+  static CallEventHandler? _onSetCallOnUnhold;
 
   /// Initialize the plugin and provided user callbacks.
   ///
@@ -62,6 +64,8 @@ class ConnectycubeFlutterCallKit {
       {CallEventHandler? onCallAccepted,
       CallEventHandler? onCallRejected,
       CallEventHandler? onCallIncoming,
+      CallEventHandler? onSetCallOnHold,
+      CallEventHandler? onSetCallOnUnhold,
       String? ringtone,
       String? icon,
       @Deprecated('Use `AndroidManifest.xml` meta-data instead')
@@ -70,7 +74,8 @@ class ConnectycubeFlutterCallKit {
     _onCallAccepted = onCallAccepted;
     _onCallRejected = onCallRejected;
     _onCallIncoming = onCallIncoming;
-
+    _onSetCallOnHold = onSetCallOnHold;
+    _onSetCallOnUnhold = onSetCallOnUnhold;
     updateConfig(
         ringtone: ringtone,
         icon: icon,
@@ -188,7 +193,7 @@ class ConnectycubeFlutterCallKit {
   /// Show incoming call notification
   static Future<void> showCallNotification(CallEvent callEvent) async {
     if (!Platform.isAndroid && !Platform.isIOS) return Future.value();
-
+    print(" call kit showing  ========= ${callEvent.toMap()}");
     return _methodChannel.invokeMethod(
         "showCallNotification", callEvent.toMap());
   }
@@ -331,6 +336,8 @@ class ConnectycubeFlutterCallKit {
         break;
 
       case 'answerCall':
+        print(
+            '_processEvent answerCall :\n $event: \neventdata : $eventData : \n arg : $arguments');
         var callEvent = CallEvent.fromMap(arguments);
         _onCallAccepted?.call(callEvent);
 
@@ -358,7 +365,16 @@ class ConnectycubeFlutterCallKit {
         var callEvent = CallEvent.fromMap(arguments);
         _onCallIncoming?.call(callEvent);
         break;
-
+      case 'setHeld':
+        print("Call vent Argument set held");
+        var callEvent = CallEvent.fromMap(arguments);
+        _onSetCallOnHold?.call(callEvent);
+        break;
+      case 'setUnHeld':
+        print("Call vent Argument set UNHOLD");
+        var callEvent = CallEvent.fromMap(arguments);
+        _onSetCallOnUnhold?.call(callEvent);
+        break;
       case '':
         break;
 

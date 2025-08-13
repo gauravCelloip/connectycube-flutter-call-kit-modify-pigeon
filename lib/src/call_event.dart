@@ -29,7 +29,7 @@ class CallEvent {
   /// you will get this data in event callbacks (e.g. onCallAcceptedWhenTerminated,
   /// onCallAccepted, onCallRejectedWhenTerminated, or onCallRejected)
   /// after setting it in method showCallNotification
-  final Map<String, String>? userInfo;
+  final String? userInfo;
 
   CallEvent copyWith({
     String? sessionId,
@@ -38,7 +38,7 @@ class CallEvent {
     String? callerName,
     Set<int>? opponentsIds,
     String? callPhoto,
-    Map<String, String>? userInfo,
+    String? userInfo,
   }) {
     return CallEvent(
       sessionId: sessionId ?? this.sessionId,
@@ -59,7 +59,7 @@ class CallEvent {
       'caller_name': callerName,
       'call_opponents': opponentsIds.join(','),
       'photo_url': callPhoto,
-      'user_info': jsonEncode(userInfo ?? <String, String>{}),
+      'user_info': userInfo,
     };
   }
 
@@ -73,9 +73,7 @@ class CallEvent {
       opponentsIds:
           (map['call_opponents'] as String).split(',').map(int.parse).toSet(),
       callPhoto: map['photo_url'],
-      userInfo: map['user_info'] != null
-          ? Map<String, String>.from(jsonDecode(map['user_info']))
-          : null,
+      userInfo: map['user_info'] as String,
     );
   }
 
@@ -107,7 +105,7 @@ class CallEvent {
         other.callerName == callerName &&
         setEquals(other.opponentsIds, opponentsIds) &&
         other.callPhoto == callPhoto &&
-        mapEquals(other.userInfo, userInfo);
+        other.userInfo == userInfo;
   }
 
   @override
