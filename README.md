@@ -1,311 +1,250 @@
+# ConnectyCube Flutter Call Kit Plugin
+
 [![Stand With Ukraine](https://raw.githubusercontent.com/vshymanskyy/StandWithUkraine/main/banner2-direct.svg)](https://stand-with-ukraine.pp.ua)
 
-# ConnectyCube Flutter Call Kit plugin
+A Flutter plugin for displaying a call screen when the app is in the background or terminated. It provides a comprehensive solution for implementing background call features in your app, including token management and displaying the incoming call screen.
 
-A Flutter plugin for displaying call screen when the app is in the background or terminated.
-It provides a complex solution for implementation the background calls feature in your app including 
-getting token and displaying the Incoming call screen.
+## Features
 
-## Supported platforms
+- **Device Token Access:** Get FCM token for Android and VoIP token for iOS.
+- **Token Refresh Notifications:** Notifies the app about token updates via a callback.
+- **Incoming Call Screen:** Displays a native-style incoming call screen, even when the app is terminated.
+- **User Action Handling:** Notifies the app of user actions like accepting, rejecting, or muting a call.
+- **Manual Call Management:** Provides methods to manually show and manage the incoming call screen.
+- **Call State Information:** Retrieve data about the current call during a session.
+- **Customization:** Customize the ringtone, app icon, and accent color (Android).
+- **Android 14 Support:** Includes features for checking and requesting `USE_FULL_SCREEN_INTENT` permission.
+
+## Supported Platforms
 
 - Android
 - iOS
 
-## Features
+## Screenshots
 
-- access device token (FCM for Android and VoIP for iOS)
-- notifying the app about token refreshing via callback
-- displaying the Incoming call screen when push notification was delivered on the device
-- notifying the app about user action performed on the Incoming call screen (accept, reject, mute (for iOS))
-- providing the methods for manual managing of the Incoming screen including the manual showing the Incoming call screen
-- getting the data about the current call during the call session
-- some customizations according to your app needs (ringtone, app icon, accent color(for Android))
-- checking and changing the access to the `Manifest.permission.USE_FULL_SCREEN_INTENT` permission (for Android 14 and above)
+<p float="left">
+  <kbd><img alt="Flutter P2P Calls code sample, incoming call in background Android" src="https://developers.connectycube.com/images/code_samples/flutter/background_call_android.png" height="440" /></kbd>
+  <kbd><img alt="Flutter P2P Calls code sample, incoming call locked Android" src="https://developers.connectycube.com/images/code_samples/flutter/background_call_android_locked.png" height="440" /></kbd>
+  <kbd><img alt="Flutter P2P Calls code sample, incoming call in background iOS" src="https://developers.connectycube.com/images/code_samples/flutter/background_call_ios.PNG" height="440" /></kbd>
+  <kbd><img alt="Flutter P2P Calls code sample, incoming call locked iOS" src="https://developers.connectycube.com/images/code_samples/flutter/background_call_ios_locked.PNG" height="440" /></kbd>
+</p>
 
+## Installation
 
-<kbd><img alt="Flutter P2P Calls code sample, incoming call in background Android" src="https://developers.connectycube.com/images/code_samples/flutter/background_call_android.png" height="440" /></kbd> 
-<kbd><img alt="Flutter P2P Calls code sample, incoming call locked Android" src="https://developers.connectycube.com/images/code_samples/flutter/background_call_android_locked.png" height="440" /></kbd> 
-<kbd><img alt="Flutter P2P Calls code sample, incoming call in background iOS" src="https://developers.connectycube.com/images/code_samples/flutter/background_call_ios.PNG" height="440" /></kbd>
-<kbd><img alt="Flutter P2P Calls code sample, incoming call locked iOS" src="https://developers.connectycube.com/images/code_samples/flutter/background_call_ios_locked.PNG" height="440" /></kbd>
+Add the following to your `pubspec.yaml` file:
 
-## Configure your project
-
-This plugin doesn't require complicated configs, just [connect it](https://pub.dev/packages/connectycube_flutter_call_kit/install) 
-as usual flutter plugin to your app and do the next simple actions:
-
-### Prepare Android
-
-- add the Google services config file `google-services.json` by path `your_app/android/app/`
-- add next string at the end of your **build.gradle** file by path `your_app/android/app/build.gradle`:
-```groovy
-apply plugin: 'com.google.gms.google-services'
+```yaml
+dependencies:
+  connectycube_flutter_call_kit: ^2.8.0 # Use the latest version
 ```
 
-If your app is targeted to `targetSdkVersion 31` and above and you need to start the app by clicking the `Accept` 
-button you should request the permission `SYSTEM_ALERT_WINDOW` from the user first. For it, you can use 
-the plugin [`permission_handler`](https://pub.dev/packages/permission_handler).
+Then, run `flutter pub get`.
 
-If your app is targeted to `targetSdkVersion 33` and above you should request the permission 
-`POST_NOTIFICATIONS` from the user first.
+## Platform Configuration
 
-### Prepare iOS
+### Android
 
-- add next strings to your **Info.plist** file by path `your_app/ios/Runner/Info.plist`:
-```
-<key>UIBackgroundModes</key>
-<array>
-    <string>remote-notification</string>
-    <string>voip</string>
-</array>
-```
+1.  **Google Services:**
+    - Download your `google-services.json` file from your Firebase project.
+    - Place it in the `android/app/` directory of your project.
 
-## API and callbacks
-### Get token
-The plugin returns the VoIP token for the iOS platform and the FCM token for the Android platform.
+2.  **build.gradle:**
+    - Add the following line to the end of your `android/app/build.gradle` file:
+      ```groovy
+      apply plugin: 'com.google.gms.google-services'
+      ```
 
-Get token from the system:
+3.  **Permissions:**
+    - For apps targeting `targetSdkVersion 31` or higher, you may need to request the `SYSTEM_ALERT_WINDOW` permission to start the app from the background. You can use a plugin like `permission_handler` for this.
+    - For apps targeting `targetSdkVersion 33` or higher, you must request the `POST_NOTIFICATIONS` permission.
 
-```dart
-ConnectycubeFlutterCallKit.getToken().then((token) {
-    // use received token for subscription on push notifications on your server
-});
-```
+### iOS
 
-Listen to the refresh token event:
-```dart
-ConnectycubeFlutterCallKit.onTokenRefreshed = (token) {
-    // use refreshed token for resubscription on your server
-};
-```
-### Customize the plugin
-We added a helpful method for customization the plugin according to your needs. At this moment you 
-can customize the ringtone, application icon, noitification small icon (Android only) 
-and notification accent color (Android only). Use the next method for it:
+1.  **Info.plist:**
+    - Add the following to your `ios/Runner/Info.plist` file:
+      ```xml
+      <key>UIBackgroundModes</key>
+      <array>
+        <string>remote-notification</string>
+        <string>voip</string>
+      </array>
+      ```
 
-```dart
-ConnectycubeFlutterCallKit.instance.updateConfig(
-  ringtone: 'custom_ringtone', 
-  icon: Platform.isAndroid ? 'default_avatar' : 'CallKitIcon', // is used as an avatar placeholder for Android and as the app icon for iOS
-  color: '#07711e');
-```
+## Usage
 
-#### [Android only] Notification icon customisation
-You can set different icons for Audion and Video calls, add suitable resources to your
-`android/app/src/main/AndroidManifest.xml` to the `application` section for it:
-```xml
-<meta-data
-    android:name="com.connectycube.flutter.connectycube_flutter_call_kit.audio_call_notification_icon"
-    android:resource="@drawable/ic_notification_audio_call" />
+### Initialization
 
-<meta-data
-    android:name="com.connectycube.flutter.connectycube_flutter_call_kit.video_call_notification_icon"
-    android:resource="@drawable/ic_notification_video_call" />
-```
-
-If you don't need it, add only the default notification icon:
-```xml
-<meta-data
-    android:name="com.connectycube.flutter.connectycube_flutter_call_kit.app_notification_icon"
-    android:resource="@drawable/ic_notification" />
-```
-
-### Show Incoming call notification
-
-```dart
-P2PCallSession incomingCall; // the call received somewhere
-
-CallEvent callEvent = CallEvent(
-    sessionId: incomingCall.sessionId,
-    callType: incomingCall.callType,
-    callerId: incomingCall.callerId,
-    callerName: 'Caller Name',
-    opponentsIds: incomingCall.opponentsIds,
-    callPhoto: 'https://i.imgur.com/KwrDil8b.jpg',
-    userInfo: {'customParameter1': 'value1'});
-ConnectycubeFlutterCallKit.showCallNotification(callEvent);
-```
-
-### Listen to the user action from the Incoming call screen:
-
-#### Listen in the foreground
-
-Add the listeners during initialization of the plugin:
+Initialize the plugin and set up your call event listeners.
 
 ```dart
 ConnectycubeFlutterCallKit.instance.init(
-    onCallAccepted: _onCallAccepted,
-    onCallRejected: _onCallRejected,
-    onCallIncoming: _onCallIncoming,
+  onCallAccepted: _onCallAccepted,
+  onCallRejected: _onCallRejected,
+  onCallIncoming: _onCallIncoming,
 );
 
 Future<void> _onCallAccepted(CallEvent callEvent) async {
-    // the call was accepted
+  // Handle accepted call
 }
 
 Future<void> _onCallRejected(CallEvent callEvent) async {
-    // the call was rejected
+  // Handle rejected call
 }
 
-Future<void> _onCallRejected(CallEvent callEvent) async {
-    // the Incoming call screen/notification was shown for user
+Future<void> _onCallIncoming(CallEvent callEvent) async {
+  // Handle incoming call
 }
 ```
 
-#### Listen in the background or terminated state (Android only):
+### Getting Tokens
+
+- **Get the current token:**
+  ```dart
+  ConnectycubeFlutterCallKit.getToken().then((token) {
+    // Use the token for push notification subscriptions
+  });
+  ```
+
+- **Listen for token refreshes:**
+  ```dart
+  ConnectycubeFlutterCallKit.onTokenRefreshed = (token) {
+    // Resubscribe with the new token
+  };
+  ```
+
+### Showing the Incoming Call UI
+
+You can show the call notification manually:
 
 ```dart
-ConnectycubeFlutterCallKit.onCallRejectedWhenTerminated = onCallRejectedWhenTerminated;
+CallEvent callEvent = CallEvent(
+  sessionId: 'your_session_id',
+  callType: 1, // 1 for video, 0 for audio
+  callerId: 123,
+  callerName: 'John Doe',
+  opponentsIds: {456, 789},
+  userInfo: {'custom_param': 'value'},
+);
+
+ConnectycubeFlutterCallKit.showCallNotification(callEvent);
+```
+
+### Handling Background Call Actions (Android)
+
+For calls in a terminated state on Android, define top-level functions:
+
+```dart
+@pragma('vm:entry-point')
+Future<void> onCallAcceptedWhenTerminated(CallEvent callEvent) async {
+  // Handle accepted call
+}
+
+@pragma('vm:entry-point')
+Future<void> onCallRejectedWhenTerminated(CallEvent callEvent) async {
+  // Handle rejected call
+}
+
+// Register these handlers
 ConnectycubeFlutterCallKit.onCallAcceptedWhenTerminated = onCallAcceptedWhenTerminated;
-ConnectycubeFlutterCallKit.onCallIncomingWhenTerminated = onCallIncomingWhenTerminated;
+ConnectycubeFlutterCallKit.onCallRejectedWhenTerminated = onCallRejectedWhenTerminated;
 ```
 
-!> Attention: the functions `onCallRejectedWhenTerminated`, `onCallAcceptedWhenTerminated` and `onCallIncomingWhenTerminated` must 
-be a top-level functions and cannot be anonymous. Mark these callbacks with the `@pragma('vm:entry-point')` 
-annotation to allow using them from the native code.
+### Managing Call State
 
-#### Listen for the actions performed on the CallKit screen (iOS only):
+- **Report call accepted:**
+  ```dart
+  ConnectycubeFlutterCallKit.reportCallAccepted(sessionId: 'your_session_id');
+  ```
 
-##### Listening for the muting/unmuting the call
+- **Report call ended:**
+  ```dart
+  ConnectycubeFlutterCallKit.reportCallEnded(sessionId: 'your_session_id');
+  ```
+
+- **Get call data:**
+  ```dart
+  ConnectycubeFlutterCallKit.getCallData(sessionId: 'your_session_id').then((data) {
+    // Use call data
+  });
+  ```
+
+- **Clear call data:**
+  ```dart
+  ConnectycubeFlutterCallKit.clearCallData(sessionId: 'your_session_id');
+  ```
+
+### Customization
+
+Customize the call notification appearance:
 
 ```dart
-ConnectycubeFlutterCallKit.onCallMuted = onCallMuted;
+ConnectycubeFlutterCallKit.instance.updateConfig(
+  ringtone: 'custom_ringtone',
+  icon: 'app_icon',
+  color: '#07711e',
+);
+```
 
-Future<void> onCallMuted(bool mute, String uuid) async {
-  // [mute] - `true` - the call was muted on the CallKit screen, `false` - the call was unmuted
-  // [uuid] - the id of the muted/unmuted call
+### Platform-Specifics
+
+#### Android
+
+- **Lock Screen Visibility:**
+  ```dart
+  // Show app on lock screen
+  ConnectycubeFlutterCallKit.setOnLockScreenVisibility(isVisible: true);
+
+  // Hide app on lock screen
+  ConnectycubeFlutterCallKit.setOnLockScreenVisibility(isVisible: false);
+  ```
+
+- **Android 14+ Full-Screen Intent:**
+  ```dart
+  bool canUse = await ConnectycubeFlutterCallKit.canUseFullScreenIntent();
+  if (!canUse) {
+    ConnectycubeFlutterCallKit.provideFullScreenIntentAccess();
+  }
+  ```
+
+#### iOS
+
+- **Mute/Unmute Call:**
+  ```dart
+  ConnectycubeFlutterCallKit.onCallMuted = (mute, uuid) {
+    // Handle mute state change
+  };
+
+  // Report mute state from your app
+  ConnectycubeFlutterCallKit.reportCallMuted(sessionId: 'your_session_id', muted: true);
+  ```
+
+## Push Notifications
+
+To automatically display the incoming call screen via push notifications, send a payload with the following parameters:
+
+```json
+{
+  "message": "Incoming Video call",
+  "call_type": 1,
+  "session_id": "your_session_id",
+  "caller_id": 123,
+  "caller_name": "John Doe",
+  "call_opponents": "456,789",
+  "signal_type": "startCall",
+  "ios_voip": 1
 }
 ```
 
-### Get the call state
+To hide the notification, send a `signal_type` of `endCall` or `rejectCall`.
 
-```dart
-var callState = await ConnectycubeFlutterCallKit.getCallState(sessionId: sessionId);
-```
+## Example
 
-### Get the call data
-```dart
-ConnectycubeFlutterCallKit.getCallData(sessionId: sessionId).then((callData) {
-      
-});
-```
+For a complete example, see the [P2P Calls code sample](https://github.com/ConnectyCube/connectycube-flutter-samples/tree/master/p2p_call_sample).
 
-### Get the id of the latest call
+## Contributing
 
-It is helpful for some cases to know the id of the last received call. You can get it via:
-
-```dart
-var sessionId = await ConnectycubeFlutterCallKit.getLastCallId();
-```
-Then you can get the state of this call using `getCallState`.
-
-### Notify the plugin about user actions concerning the call on the Flutter app side
-
-For dismissing the Incoming call screen (or the Call Kit for iOS) you should notify the plugin about 
-these events.
-Use next functions for it:
-
-```dart
-ConnectycubeFlutterCallKit.reportCallAccepted(sessionId: uuid);
-ConnectycubeFlutterCallKit.reportCallEnded(sessionId: uuid);
-```
-
-Notifying the plugin about muting/unmuting the call (iOS only):
-```dart
-var muted = true; // set `true` if the call was muted or `false` if the call was unmuted
-
-ConnectycubeFlutterCallKit.reportCallMuted(sessionId: uuid, muted: muted);
-```
-
-### Clear call data
-After finishing the call you can clear all data on the plugin side related to this call, call the 
-next code for it
-
-```dart
-await ConnectycubeFlutterCallKit.clearCallData(sessionId: sessionId);
-```
-
-### Manage the app visibility on the lock screen (Android only)
-
-In case you need to show your app after accepting the call from the lock screen you can do it using 
-the method
-```dart
-ConnectycubeFlutterCallKit.setOnLockScreenVisibility(isVisible: true);
-```
-
-After finishing that call you should hide your app under the lock screen, do it via
-```dart
-ConnectycubeFlutterCallKit.setOnLockScreenVisibility(isVisible: false);
-```
-
-### Check the permission `Manifest.permission.USE_FULL_SCREEN_INTENT` state (Android 14 and above)
-
-```dart
-var canUseFullScreenIntent = await ConnectycubeFlutterCallKit.canUseFullScreenIntent();
-```
-
-### Request the access to the `Manifest.permission.USE_FULL_SCREEN_INTENT` permission (Android 14 and above)
-
-```dart
-ConnectycubeFlutterCallKit.provideFullScreenIntentAccess();
-```
-The function moves the user to the specific setting for your app where you can grant or deny this 
-permission for your app.
-
-## Show Incoming call screen by push notification
-In case you want to display the Incoming call screen automatically by push notification you can do 
-it easily. For it, the caller should send the push notification to all call members. This push notification should contain some required parameters. If you use the [Connectycube Flutter SDK](https://pub.dev/packages/connectycube_sdk), you can do it using the next code:
-
-```dart
-CreateEventParams params = CreateEventParams();
-params.parameters = {
-    'message': "Incoming ${currentCall.callType == CallType.VIDEO_CALL ? "Video" : "Audio"} call",
-    'call_type': currentCall.callType,
-    'session_id': currentCall.sessionId,
-    'caller_id': currentCall.callerId,
-    'caller_name': callerName,
-    'call_opponents': currentCall.opponentsIds.join(','),
-    'photo_url': 'https://i.imgur.com/KwrDil8b.jpg'
-    'signal_type': 'startCall',
-    'ios_voip': 1,
- };
-
-params.notificationType = NotificationType.PUSH;
-params.environment = CubeEnvironment.DEVELOPMENT; // not important
-params.usersIds = currentCall.opponentsIds.toList();
-
-createEvent(params.getEventForRequest()).then((cubeEvent) {
-      // event was created
-}).catchError((error) {
-      // something went wrong during event creation
-});
-```
-
-For hiding the Incoming call screen via push notification use a similar request but with a 
-different `signal_type`, it can be `'endCall'` or `'rejectCall'`.
-
-## Android 14 features
-Starting from Android `Build.VERSION_CODES.UPSIDE_DOWN_CAKE`, apps may not have permission to use 
-`Manifest.permission.USE_FULL_SCREEN_INTENT`. If permission is denied, the call notification will 
-show up as an expanded heads up notification on lockscreen. The plugin provides the API for checking 
-the access state and moves to the System setting for enabling it. Please follow the next code 
-snippet to manage it:
-```dart
-var canUseFullScreenIntent = await ConnectycubeFlutterCallKit.canUseFullScreenIntent();
-
-if (!canUseFullScreenIntent){
-  ConnectycubeFlutterCallKit.provideFullScreenIntentAccess();
-}
-```
-
-You can check how this plugin works in our [P2P Calls code sample](https://github.com/ConnectyCube/connectycube-flutter-samples/tree/master/p2p_call_sample).
-
-## Have an issue?
-
-Got troubles with integration? Create an issue at [Issues page](https://github.com/ConnectyCube/connectycube-flutter-call-kit/issues).
-
-**Want to support our team**:<br>
-<a href="https://www.buymeacoffee.com/connectycube" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/v2/default-blue.png" alt="Buy Me A Coffee" style="height: 60px !important;width: 217px !important;" ></a>
+Contributions are welcome! If you have a feature request or bug report, please [open an issue](https://github.com/ConnectyCube/connectycube-flutter-call-kit/issues).
 
 ## License
 
-See [LICENSE](LICENSE)
+This project is licensed under the [LICENSE](LICENSE) file.
